@@ -1,6 +1,8 @@
 # Standalone
 
- mvn exec:java -Pstandalone
+    mvn exec:java -Pstandalone
 
 
 # In WildFly
+
+    mvn wildfly:run
