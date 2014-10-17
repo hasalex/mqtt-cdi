@@ -14,7 +14,6 @@
 
         <junit.version>4.11</junit.version>
         <mockito.version>1.9.5</mockito.version>
-        <weld.version>2.2.5.Final</weld.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -33,13 +32,6 @@
             <artifactId>mqtt-client</artifactId>
             <version>${mqtt-client.version}</version>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.weld.se</groupId>
-            <artifactId>weld-se-core</artifactId>
-            <version>${weld.version}</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
