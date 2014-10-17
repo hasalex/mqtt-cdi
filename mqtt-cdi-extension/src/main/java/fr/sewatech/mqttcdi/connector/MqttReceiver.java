@@ -20,7 +20,9 @@ class MqttReceiver {
     @Inject
     private AsyncMessageEventSender asyncMessageEventSender;
 
-    private void connect(@Observes MqttExtensioninitialized init) {
+    private FutureConnection connection;
+
+    private void connect(@Observes MqttExtensionInitialized init) {
         try {
             FutureConnection connection = connect(init.host);
 
@@ -31,17 +33,22 @@ class MqttReceiver {
                 message.ack();
                 asyncMessageEventSender.send(new MqttMessage(message.getTopic(), message.getPayload()));
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private FutureConnection connect(String host1) throws URISyntaxException {
-        MQTT mqtt = new MQTT();
-        mqtt.setHost(host1);
+    private void connect(@Observes MqttExtensionShutdown shutdown) {
+        if (connection != null) {
+            connection.disconnect();
+        }
+    }
 
-        FutureConnection connection = mqtt.futureConnection();
+    private FutureConnection connect(String host) throws URISyntaxException {
+        MQTT mqtt = new MQTT();
+        mqtt.setHost(host);
+
+        connection = mqtt.futureConnection();
         connection.connect();
         return connection;
     }

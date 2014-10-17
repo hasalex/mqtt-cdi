@@ -35,6 +35,6 @@ public class MqttExtension implements Extension {
 
     void end(@Observes AfterDeploymentValidation afterDeploymentValidation, BeanManager beanManager) {
         System.out.println("AfterDeploymentValidation");
-        beanManager.fireEvent(new MqttExtensioninitialized(topics.toArray(new Topic[topics.size()])));
+        beanManager.fireEvent(new MqttExtensionInitialized(topics.toArray(new Topic[topics.size()])));
     }
 }

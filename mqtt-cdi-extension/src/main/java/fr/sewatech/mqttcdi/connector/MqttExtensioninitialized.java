@@ -5,13 +5,13 @@ import org.fusesource.mqtt.client.Topic;
 /**
  * @author Alexis Hassler
  */
-class MqttExtensioninitialized {
+class MqttExtensionInitialized {
 
     final String host = "tcp://localhost:1883";
 
     final Topic[] topics;
 
-    MqttExtensioninitialized(Topic[] topics) {
+    MqttExtensionInitialized(Topic[] topics) {
         this.topics = topics;
     }
 
