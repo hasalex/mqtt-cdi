@@ -5,4 +5,10 @@ package fr.sewatech.mqttcdi.connector;
  */
 class MqttExtensionShutdown {
 
+    final String[] topics;
+
+    MqttExtensionShutdown(String[] topics) {
+        this.topics = topics;
+    }
+
 }

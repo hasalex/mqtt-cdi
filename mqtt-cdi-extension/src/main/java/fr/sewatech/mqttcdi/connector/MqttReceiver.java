@@ -6,6 +6,7 @@ import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.Message;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
@@ -23,6 +24,8 @@ class MqttReceiver {
     private FutureConnection connection;
 
     private void connect(@Observes MqttExtensionInitialized init) {
+        System.out.println("About to connect...");
+
         try {
             FutureConnection connection = connect(init.host);
 
@@ -33,14 +36,22 @@ class MqttReceiver {
                 message.ack();
                 asyncMessageEventSender.send(new MqttMessage(message.getTopic(), message.getPayload()));
             }
+        } catch (InterruptedException e) {
+            System.out.println(e);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void connect(@Observes MqttExtensionShutdown shutdown) {
+    private void disconnect(@Observes MqttExtensionShutdown shutdown) {
+        System.out.println("disconnect");
         if (connection != null) {
-            connection.disconnect();
+            try {
+                connection.unsubscribe(shutdown.topics);
+                connection.disconnect().await();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -52,6 +63,5 @@ class MqttReceiver {
         connection.connect();
         return connection;
     }
-
 
 }
