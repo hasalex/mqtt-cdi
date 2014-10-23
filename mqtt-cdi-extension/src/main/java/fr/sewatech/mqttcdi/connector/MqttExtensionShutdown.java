@@ -3,7 +3,7 @@ package fr.sewatech.mqttcdi.connector;
 /**
  * @author Alexis Hassler
  */
-class MqttExtensionShutdown {
+public class MqttExtensionShutdown {
 
     final String[] topics;
 
