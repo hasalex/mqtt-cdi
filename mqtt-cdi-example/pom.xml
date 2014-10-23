@@ -12,7 +12,7 @@
     <properties>
         <mqtt-client.version>1.10</mqtt-client.version>
         <javaee.version>7.0</javaee.version>
-        <weld.version>2.2.5.Final</weld.version>
+        <weld.version>2.1.2.Final</weld.version>
         <slf4j.version>1.7.7</slf4j.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
