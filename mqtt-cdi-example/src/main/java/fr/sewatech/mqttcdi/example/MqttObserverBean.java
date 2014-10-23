@@ -42,23 +42,24 @@ public class MqttObserverBean {
     private AtomicInteger count = new AtomicInteger();
 
     public void onQuestion(@Observes @MqttTopic(value = "swt/Question", qos = QoS.EXACTLY_ONCE) MqttMessage message) {
-        System.out.println("Received : " + count.incrementAndGet());
-        answer("Answer " + count.get());
+        logger.fine("Received : " + count.incrementAndGet());
+        System.out.println("Message received " + message.asText() + " in " + this.getClass().getName() + " on Topic " + message.getTopic());
+        answer("Answer " + message.asText());
         try {
-            Thread.sleep(10000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Sleeping thread interrupted", e);
         }
-        System.out.println("Done : " + count.decrementAndGet());
+        logger.fine("Done : " + count.decrementAndGet());
     }
 
     public void onQuestionBis(@Observes @MqttTopic("swt/QuestionBis") MqttMessage message) {
-        System.out.println("Message received (@TopicListener) " + new String(message.getPayload()) + " in " + this.getClass().getName() + " on Topic " + message.getTopic());
+        System.out.println("Message received " + message.asText() + " in " + this.getClass().getName() + " on Topic " + message.getTopic());
     }
 
     private void answer(String message) {
         if (connectionFactory == null) {
-            logger.fine(this.getClass().getName() + " is trying to answer but has no connection factory");
+            logger.warning(this.getClass().getName() + " is trying to answer but has no connection factory");
             return;
         }
         if (logger.isLoggable(Level.FINE)) {

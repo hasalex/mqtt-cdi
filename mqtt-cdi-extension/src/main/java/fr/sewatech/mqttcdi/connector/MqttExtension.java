@@ -4,7 +4,6 @@ import fr.sewatech.mqttcdi.api.MqttMessage;
 import fr.sewatech.mqttcdi.api.MqttTopic;
 import org.fusesource.mqtt.client.Topic;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.*;
 import javax.naming.InitialContext;
@@ -12,18 +11,21 @@ import javax.naming.NamingException;
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.logging.Logger;
 
 /**
  * @author Alexis Hassler
  */
 public class MqttExtension implements Extension {
 
+    private static final Logger logger = Logger.getLogger(MqttExtension.class.getName());
+
     private Set<Topic> topicSet = new HashSet<>();
-    private ThreadFactory threadFactory;
 
     void registerTopic(@Observes ProcessObserverMethod<MqttMessage, ?> observerMethod) {
-        System.out.println("ProcessObserverMethod");
+        logger.fine("ProcessObserverMethod");
         Set<Annotation> qualifiers = observerMethod.getObserverMethod().getObservedQualifiers();
         for (Annotation qualifier : qualifiers) {
             if (qualifier instanceof MqttTopic) {
@@ -34,8 +36,9 @@ public class MqttExtension implements Extension {
     }
 
     void afterDeploymentValidation(@Observes AfterDeploymentValidation afterDeploymentValidation, BeanManager beanManager) {
-        System.out.println("AfterDeploymentValidation ...");
+        logger.fine("AfterDeploymentValidation ...");
 
+        ThreadFactory threadFactory;
         try {
             threadFactory = InitialContext.doLookup("java:comp/DefaultManagedThreadFactory");
         } catch (NamingException e) {
@@ -47,7 +50,7 @@ public class MqttExtension implements Extension {
     }
 
     void shutdown(@Observes BeforeShutdown beforeShutdown, BeanManager beanManager) {
-        System.out.println("BeforeShutdown...");
+        logger.fine("BeforeShutdown...");
         String[] topics = new String[topicSet.size()];
         int i = 0;
         for (Topic topic : topicSet) {
@@ -66,7 +69,7 @@ public class MqttExtension implements Extension {
         }
 
         public void run() {
-            System.out.println("Run...");
+            logger.fine("Run...");
             beanManager.fireEvent(event);
         }
     }

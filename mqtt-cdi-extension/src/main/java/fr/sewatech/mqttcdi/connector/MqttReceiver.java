@@ -1,16 +1,15 @@
 package fr.sewatech.mqttcdi.connector;
 
 import fr.sewatech.mqttcdi.api.MqttMessage;
-import org.fusesource.mqtt.client.Future;
 import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.Message;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Alexis Hassler
@@ -18,44 +17,49 @@ import java.net.URISyntaxException;
 @ApplicationScoped
 class MqttReceiver {
 
+    private static final Logger logger = Logger.getLogger(MqttReceiver.class.getName());
+
     @Inject
     private AsyncMessageEventSender asyncMessageEventSender;
 
     private FutureConnection connection;
 
     private void connect(@Observes MqttExtensionInitialized init) {
-        System.out.println("About to connect...");
+        logger.fine("About to connect...");
 
         try {
             FutureConnection connection = connect(init.host);
-
+            logger.fine("Connected ? " + connection.isConnected());
             connection.subscribe(init.topics);
             while (true) {
-                Future<Message> futureMessage = connection.receive();
-                Message message = futureMessage.await();
-                message.ack();
+                Message message = connection.receive().await();
                 asyncMessageEventSender.send(new MqttMessage(message.getTopic(), message.getPayload()));
+                message.ack();
+
+                if (!connection.isConnected()) {
+                    return;
+                }
             }
         } catch (InterruptedException e) {
-            System.out.println(e);
+            logger.log(Level.WARNING, "Receiver thread interrupted", e);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Receiver problem", e);
         }
     }
 
-    private void disconnect(@Observes MqttExtensionShutdown shutdown) {
-        System.out.println("disconnect");
+    private void disconnect(@Observes MqttExtensionShutdown event) {
+        logger.fine("About to disconnect");
         if (connection != null) {
             try {
-                connection.unsubscribe(shutdown.topics);
+                connection.unsubscribe(event.topics);
                 connection.disconnect().await();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.WARNING, "Problem while disconnnecting", e);
             }
         }
     }
 
-    private FutureConnection connect(String host) throws URISyntaxException {
+    private FutureConnection connect(String host) throws Exception {
         MQTT mqtt = new MQTT();
         mqtt.setHost(host);
 

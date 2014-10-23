@@ -12,6 +12,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Alexis Hassler
@@ -19,13 +21,15 @@ import java.util.concurrent.TimeUnit;
 @ApplicationScoped
 class AsyncMessageEventSender {
 
+    private static final Logger logger = Logger.getLogger(AsyncMessageEventSender.class.getName());
+
     private ExecutorService executorService;
 
     @Inject
     private Event<MqttMessage> mqttMessageEvent;
 
     public AsyncMessageEventSender() {
-        System.out.println("NEW AsyncMessageEventSender");
+        logger.fine("NEW AsyncMessageEventSender");
     }
 
     @PostConstruct
@@ -35,7 +39,7 @@ class AsyncMessageEventSender {
         } catch (NamingException e) {
             executorService = new ThreadPoolExecutor(16, 16, 10, TimeUnit.MINUTES, new LinkedBlockingDeque<Runnable>());
         } catch (IllegalArgumentException e) {
-            System.out.println(e);
+            logger.log(Level.WARNING, "Cannot initialize thread pool", e);
         }
     }
 

@@ -34,6 +34,10 @@ public class MqttMessage {
         return payload;
     }
 
+    public String asText() {
+        return new String(payload);
+    }
+
     public String getTopic() {
         return topic;
     }
