@@ -23,6 +23,7 @@ public class MqttExtension implements Extension {
     private static final Logger logger = Logger.getLogger(MqttExtension.class.getName());
 
     private Set<Topic> topicSet = new HashSet<>();
+    private MqttMessageReceiver receiver;
 
     void registerTopic(@Observes ProcessObserverMethod<MqttMessage, ?> observerMethod) {
         logger.fine("ProcessObserverMethod");
@@ -38,39 +39,24 @@ public class MqttExtension implements Extension {
     void afterDeploymentValidation(@Observes AfterDeploymentValidation afterDeploymentValidation, BeanManager beanManager) {
         logger.fine("AfterDeploymentValidation ...");
 
+        Topic[] topics = topicSet.toArray(new Topic[topicSet.size()]);
+        receiver = new MqttMessageReceiver(topics, beanManager);
+        newThread(receiver).start();
+    }
+
+    void shutdown(@Observes BeforeShutdown beforeShutdown) {
+        logger.fine("Before shutdown ...");
+        receiver.shutdown();
+    }
+
+    private Thread newThread(MqttMessageReceiver runnable) {
         ThreadFactory threadFactory;
         try {
             threadFactory = InitialContext.doLookup("java:comp/DefaultManagedThreadFactory");
         } catch (NamingException e) {
             threadFactory = Executors.defaultThreadFactory();
         }
-
-        Topic[] topics = topicSet.toArray(new Topic[topicSet.size()]);
-        threadFactory.newThread(new EventRunnable(new MqttExtensionInitialized(topics), beanManager)).start();
+        return threadFactory.newThread(runnable);
     }
 
-    void shutdown(@Observes BeforeShutdown beforeShutdown, BeanManager beanManager) {
-        logger.fine("BeforeShutdown...");
-        String[] topics = new String[topicSet.size()];
-        int i = 0;
-        for (Topic topic : topicSet) {
-            topics[i++] = topic.name().toString();
-        }
-        beanManager.fireEvent(new MqttExtensionShutdown(topics));
-    }
-
-    private class EventRunnable implements Runnable {
-        private MqttExtensionInitialized event;
-        private BeanManager beanManager;
-
-        public EventRunnable(MqttExtensionInitialized event, BeanManager beanManager) {
-            this.event = event;
-            this.beanManager = beanManager;
-        }
-
-        public void run() {
-            logger.fine("Run...");
-            beanManager.fireEvent(event);
-        }
-    }
 }

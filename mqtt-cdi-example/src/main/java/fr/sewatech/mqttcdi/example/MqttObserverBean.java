@@ -41,7 +41,7 @@ public class MqttObserverBean {
 
     private AtomicInteger count = new AtomicInteger();
 
-    public void onQuestion(@Observes @MqttTopic(value = "swt/Question", qos = QoS.EXACTLY_ONCE) MqttMessage message) {
+    public void onQuestion(@Observes @MqttTopic("swt/Question") MqttMessage message) {
         logger.fine("Received : " + count.incrementAndGet());
         System.out.println("Message received " + message.asText() + " in " + this.getClass().getName() + " on Topic " + message.getTopic());
         answer("Answer " + message.asText());
@@ -70,7 +70,7 @@ public class MqttObserverBean {
             connection.publish("swt/Default", message, QoS.AT_MOST_ONCE);
             connection.close();
         } catch (Exception e) {
-            logger.log(Level.SEVERE, e.getMessage(), e);
+            logger.log(Level.SEVERE, "ARRRRGH : " + e.getMessage(), e);
         }
     }
 }

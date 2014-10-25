@@ -15,13 +15,10 @@
  */
 package fr.sewatech.mqttcdi.outbound;
 
-import fr.sewatech.mqttcdi.connector.MqttExtensionShutdown;
 import org.fusesource.mqtt.client.BlockingConnection;
 import org.fusesource.mqtt.client.MQTT;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.enterprise.event.Reception;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
@@ -49,7 +46,7 @@ public class MqttConnectionFactory {
         pool.offer(connection.blockingConnection);
     }
 
-    void shutdown(@Observes(notifyObserver=Reception.IF_EXISTS) MqttExtensionShutdown shutdown) {
+    void shutdown() {
         logger.fine("Shutting down connection factory");
         for (BlockingConnection connection : pool) {
             try {
