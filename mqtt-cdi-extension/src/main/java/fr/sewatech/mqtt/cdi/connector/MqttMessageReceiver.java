@@ -1,14 +1,12 @@
-package fr.sewatech.mqttcdi.connector;
+package fr.sewatech.mqtt.cdi.connector;
 
-import fr.sewatech.mqttcdi.api.MqttMessage;
+import fr.sewatech.mqtt.cdi.api.MqttMessage;
 import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.Message;
 import org.fusesource.mqtt.client.Topic;
 
-import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.concurrent.ExecutorService;

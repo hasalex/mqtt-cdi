@@ -1,6 +1,6 @@
-package fr.sewatech.mqttcdi.connector;
+package fr.sewatech.mqtt.cdi.connector;
 
-import fr.sewatech.mqttcdi.api.MqttTopic;
+import fr.sewatech.mqtt.cdi.api.MqttTopic;
 import org.fusesource.mqtt.client.QoS;
 
 import javax.enterprise.util.AnnotationLiteral;

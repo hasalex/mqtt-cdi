@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.sewatech.mqttcdi.api;
+package fr.sewatech.mqtt.cdi.api;
 
 /**
  * MQTT message, with a binary content and a topic reference

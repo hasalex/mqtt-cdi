@@ -1,4 +1,4 @@
-package fr.sewatech.mqttcdi.api;
+package fr.sewatech.mqtt.cdi.api;
 
 import org.fusesource.mqtt.client.QoS;
 

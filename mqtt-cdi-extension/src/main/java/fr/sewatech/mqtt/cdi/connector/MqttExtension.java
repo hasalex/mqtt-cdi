@@ -1,7 +1,7 @@
-package fr.sewatech.mqttcdi.connector;
+package fr.sewatech.mqtt.cdi.connector;
 
-import fr.sewatech.mqttcdi.api.MqttMessage;
-import fr.sewatech.mqttcdi.api.MqttTopic;
+import fr.sewatech.mqtt.cdi.api.MqttMessage;
+import fr.sewatech.mqtt.cdi.api.MqttTopic;
 import org.fusesource.mqtt.client.Topic;
 
 import javax.enterprise.event.Observes;

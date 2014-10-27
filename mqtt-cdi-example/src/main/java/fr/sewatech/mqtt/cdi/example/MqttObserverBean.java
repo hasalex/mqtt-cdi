@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.sewatech.mqttcdi.example;
+package fr.sewatech.mqtt.cdi.example;
 
-import fr.sewatech.mqttcdi.api.MqttMessage;
-import fr.sewatech.mqttcdi.api.MqttTopic;
-import fr.sewatech.mqttcdi.outbound.MqttConnection;
-import fr.sewatech.mqttcdi.outbound.MqttConnectionFactory;
+import fr.sewatech.mqtt.cdi.api.MqttMessage;
+import fr.sewatech.mqtt.cdi.api.MqttTopic;
+import fr.sewatech.mqtt.cdi.connector.MqttConnectionFactoryImpl;
+import fr.sewatech.mqtt.cdi.connector.MqttConnectionImpl;
 import org.fusesource.mqtt.client.QoS;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -37,7 +37,7 @@ public class MqttObserverBean {
     private static final Logger logger = Logger.getLogger(MqttObserverBean.class.getName());
 
     @Inject
-    private MqttConnectionFactory connectionFactory;
+    private MqttConnectionFactoryImpl connectionFactory;
 
     private AtomicInteger count = new AtomicInteger();
 
@@ -66,7 +66,7 @@ public class MqttObserverBean {
             logger.fine(this.getClass().getName() + " will answer " + message);
         }
         try {
-            MqttConnection connection = connectionFactory.getConnection();
+            MqttConnectionImpl connection = connectionFactory.getConnection();
             connection.publish("swt/Default", message, QoS.AT_MOST_ONCE);
             connection.close();
         } catch (Exception e) {

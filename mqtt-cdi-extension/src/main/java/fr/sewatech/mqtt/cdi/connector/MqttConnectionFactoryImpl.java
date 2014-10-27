@@ -1,5 +1,6 @@
-package fr.sewatech.mqttcdi.outbound;
+package fr.sewatech.mqtt.cdi.connector;
 
+import fr.sewatech.mqtt.cdi.api.MqttConnectionFactory;
 import org.fusesource.mqtt.client.BlockingConnection;
 import org.fusesource.mqtt.client.MQTT;
 
@@ -9,13 +10,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
 @ApplicationScoped
-public class MqttConnectionFactory {
+public class MqttConnectionFactoryImpl implements MqttConnectionFactory {
 
-    private static final Logger logger = Logger.getLogger(MqttConnectionFactory.class.getName());
+    private static final Logger logger = Logger.getLogger(MqttConnectionFactoryImpl.class.getName());
 
     private ConcurrentLinkedQueue<BlockingConnection> pool = new ConcurrentLinkedQueue<>();
 
-    public MqttConnection getConnection() {
+    public MqttConnectionImpl getConnection() {
         try {
             BlockingConnection blockingConnection = pool.poll();
             if (blockingConnection == null) {
@@ -25,13 +26,13 @@ public class MqttConnectionFactory {
                 logger.fine("Existing connection available, no need to create a new one");
             }
 
-            return new MqttConnection(blockingConnection, this);
+            return new MqttConnectionImpl(blockingConnection, this);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    void close(MqttConnection connection) {
+    void close(MqttConnectionImpl connection) {
         pool.offer(connection.blockingConnection);
     }
 

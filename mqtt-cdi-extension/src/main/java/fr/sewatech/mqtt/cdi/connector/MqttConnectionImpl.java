@@ -1,19 +1,20 @@
-package fr.sewatech.mqttcdi.outbound;
+package fr.sewatech.mqtt.cdi.connector;
 
+import fr.sewatech.mqtt.cdi.api.MqttConnection;
 import org.fusesource.mqtt.client.BlockingConnection;
 import org.fusesource.mqtt.client.QoS;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class MqttConnection {
+public class MqttConnectionImpl implements MqttConnection {
 
-    private static final Logger logger = Logger.getLogger(MqttConnection.class.getName());
+    private static final Logger logger = Logger.getLogger(MqttConnectionImpl.class.getName());
 
     BlockingConnection blockingConnection;
-    private MqttConnectionFactory connectionFactory;
+    private MqttConnectionFactoryImpl connectionFactory;
 
-    MqttConnection(BlockingConnection blockingConnection, MqttConnectionFactory mqttConnectionFactory) {
+    MqttConnectionImpl(BlockingConnection blockingConnection, MqttConnectionFactoryImpl mqttConnectionFactory) {
         this.blockingConnection = blockingConnection;
         connectionFactory = mqttConnectionFactory;
     }
