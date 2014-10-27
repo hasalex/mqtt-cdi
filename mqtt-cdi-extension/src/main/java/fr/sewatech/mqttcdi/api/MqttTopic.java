@@ -16,7 +16,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface MqttTopic {
+
     String value();
+
     @Nonbinding
     QoS qos() default QoS.AT_MOST_ONCE;
 }
