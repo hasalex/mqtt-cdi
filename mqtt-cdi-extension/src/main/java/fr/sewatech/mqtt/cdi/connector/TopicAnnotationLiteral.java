@@ -7,15 +7,24 @@ import javax.enterprise.util.AnnotationLiteral;
 
 class TopicAnnotationLiteral extends AnnotationLiteral<MqttTopic> implements MqttTopic {
     private String value;
+    private String url;
 
-    TopicAnnotationLiteral(String value) {
+    TopicAnnotationLiteral(String url, String value) {
+        this.url = url;
         this.value = value;
     }
 
+    @Override
     public String value() {
         return value;
     }
 
+    @Override
+    public String url() {
+        return url;
+    }
+
+    @Override
     public QoS qos() {
         return QoS.AT_MOST_ONCE;
     }

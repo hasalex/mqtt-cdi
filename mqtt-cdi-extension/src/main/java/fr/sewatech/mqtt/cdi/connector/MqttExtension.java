@@ -9,8 +9,7 @@ import javax.enterprise.inject.spi.*;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.lang.annotation.Annotation;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Logger;
@@ -22,8 +21,8 @@ public class MqttExtension implements Extension {
 
     private static final Logger logger = Logger.getLogger(MqttExtension.class.getName());
 
-    private Set<Topic> topicSet = new HashSet<>();
-    private MqttMessageReceiver receiver;
+    private Map<String, Set<Topic>> topicMap = new HashMap<>();
+    private List<MqttMessageReceiver> receivers = new ArrayList<>();
 
     void registerTopic(@Observes ProcessObserverMethod<MqttMessage, ?> observerMethod) {
         logger.fine("ProcessObserverMethod");
@@ -31,7 +30,12 @@ public class MqttExtension implements Extension {
         for (Annotation qualifier : qualifiers) {
             if (qualifier instanceof MqttTopic) {
                 MqttTopic topic = (MqttTopic) qualifier;
-                topicSet.add(new Topic(topic.value(), topic.qos()));
+                Set<Topic> topics = topicMap.get(topic.url());
+                if (topics == null) {
+                    topics = new HashSet<>();
+                    topicMap.put(topic.url(), topics);
+                }
+                topics.add(new Topic(topic.value(), topic.qos()));
             }
         }
     }
@@ -39,14 +43,20 @@ public class MqttExtension implements Extension {
     void afterDeploymentValidation(@Observes AfterDeploymentValidation afterDeploymentValidation, BeanManager beanManager) {
         logger.fine("AfterDeploymentValidation ...");
 
-        Topic[] topics = topicSet.toArray(new Topic[topicSet.size()]);
-        receiver = new MqttMessageReceiver(topics, beanManager);
-        newThread(receiver).start();
+        for (Map.Entry<String, Set<Topic>> entry : topicMap.entrySet()) {
+            Set<Topic> topicSet = entry.getValue();
+            Topic[] topics = topicSet.toArray(new Topic[topicSet.size()]);
+            MqttMessageReceiver receiver = new MqttMessageReceiver(entry.getKey(), topics, beanManager);
+            receivers.add(receiver);
+            newThread(receiver).start();
+        }
     }
 
     void shutdown(@Observes BeforeShutdown beforeShutdown) {
         logger.fine("Before shutdown ...");
-        receiver.shutdown();
+        for (MqttMessageReceiver receiver : receivers) {
+            receiver.shutdown();
+        }
     }
 
     private Thread newThread(MqttMessageReceiver runnable) {

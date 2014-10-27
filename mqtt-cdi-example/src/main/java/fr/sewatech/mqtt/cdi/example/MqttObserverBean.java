@@ -57,6 +57,10 @@ public class MqttObserverBean {
         System.out.println("Message received " + message.asText() + " in " + this.getClass().getName() + " on Topic " + message.getTopic());
     }
 
+    public void onQuestionOtherBroker(@Observes @MqttTopic(value = "swt/Question", url = "tcp://docker:2883") MqttMessage message) {
+        System.out.println("Message received " + message.asText() + " in " + this.getClass().getName() + " on Topic " + message.getTopic());
+    }
+
     private void answer(String message) {
         if (connectionFactory == null) {
             logger.warning(this.getClass().getName() + " is trying to answer but has no connection factory");

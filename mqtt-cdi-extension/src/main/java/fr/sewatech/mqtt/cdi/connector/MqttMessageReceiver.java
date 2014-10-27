@@ -26,15 +26,17 @@ class MqttMessageReceiver implements Runnable {
     private Topic[] topics;
     private BeanManager beanManager;
     private FutureConnection connection;
+    private String url;
 
-    MqttMessageReceiver(Topic[] topics, BeanManager beanManager) {
+    MqttMessageReceiver(String url, Topic[] topics, BeanManager beanManager) {
         this.topics = topics;
         this.beanManager = beanManager;
+        this.url = url;
     }
 
     public void run() {
         try {
-            connection = connect("tcp://localhost:1883");
+            connection = connect(url);
             connection.subscribe(topics);
             logger.fine("... connected");
 
@@ -96,13 +98,13 @@ class MqttMessageReceiver implements Runnable {
             this.message = message;
         }
 
-
         public void run() {
-            beanManager.fireEvent(message, new TopicAnnotationLiteral(message.getTopic()));
+            beanManager.fireEvent(message, new TopicAnnotationLiteral(url, message.getTopic()));
         }
     }
 
     private FutureConnection connect(String host) throws Exception {
+        logger.fine("Connecting to host " + host);
         MQTT mqtt = new MQTT();
         mqtt.setHost(host);
 

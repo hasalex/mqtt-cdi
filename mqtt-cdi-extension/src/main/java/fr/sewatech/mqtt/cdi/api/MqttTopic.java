@@ -19,6 +19,8 @@ public @interface MqttTopic {
 
     String value();
 
+    String url() default "tcp://localhost:1883";
+
     @Nonbinding
     QoS qos() default QoS.AT_MOST_ONCE;
 }
