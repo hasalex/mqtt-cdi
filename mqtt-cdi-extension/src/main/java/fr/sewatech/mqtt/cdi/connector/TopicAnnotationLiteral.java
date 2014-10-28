@@ -1,11 +1,11 @@
 package fr.sewatech.mqtt.cdi.connector;
 
-import fr.sewatech.mqtt.cdi.api.MqttTopic;
+import fr.sewatech.mqtt.cdi.api.MqttInboundTopic;
 import org.fusesource.mqtt.client.QoS;
 
 import javax.enterprise.util.AnnotationLiteral;
 
-class TopicAnnotationLiteral extends AnnotationLiteral<MqttTopic> implements MqttTopic {
+class TopicAnnotationLiteral extends AnnotationLiteral<MqttInboundTopic> implements MqttInboundTopic {
     private String value;
     private String url;
 

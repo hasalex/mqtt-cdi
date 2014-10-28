@@ -1,7 +1,7 @@
 package fr.sewatech.mqtt.cdi.connector;
 
+import fr.sewatech.mqtt.cdi.api.MqttInboundTopic;
 import fr.sewatech.mqtt.cdi.api.MqttMessage;
-import fr.sewatech.mqtt.cdi.api.MqttTopic;
 import org.fusesource.mqtt.client.Topic;
 
 import javax.enterprise.event.Observes;
@@ -28,8 +28,8 @@ public class MqttExtension implements Extension {
         logger.fine("ProcessObserverMethod");
         Set<Annotation> qualifiers = observerMethod.getObserverMethod().getObservedQualifiers();
         for (Annotation qualifier : qualifiers) {
-            if (qualifier instanceof MqttTopic) {
-                MqttTopic topic = (MqttTopic) qualifier;
+            if (qualifier instanceof MqttInboundTopic) {
+                MqttInboundTopic topic = (MqttInboundTopic) qualifier;
                 Set<Topic> topics = topicMap.get(topic.url());
                 if (topics == null) {
                     topics = new HashSet<>();

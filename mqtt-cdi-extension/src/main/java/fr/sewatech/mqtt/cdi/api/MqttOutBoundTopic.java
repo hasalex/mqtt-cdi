@@ -12,15 +12,13 @@ import java.lang.annotation.Target;
 /**
  * @author Alexis Hassler
  */
-@Qualifier
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-public @interface MqttTopic {
+@Target({ElementType.FIELD})
+public @interface MqttOutBoundTopic {
 
     String value();
 
     String url() default "tcp://localhost:1883";
 
-    @Nonbinding
     QoS qos() default QoS.AT_MOST_ONCE;
 }

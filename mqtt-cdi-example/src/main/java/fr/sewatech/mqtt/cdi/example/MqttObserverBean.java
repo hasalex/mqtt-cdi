@@ -15,9 +15,10 @@
  */
 package fr.sewatech.mqtt.cdi.example;
 
+import fr.sewatech.mqtt.cdi.api.MqttConnectionFactory;
+import fr.sewatech.mqtt.cdi.api.MqttInboundTopic;
 import fr.sewatech.mqtt.cdi.api.MqttMessage;
-import fr.sewatech.mqtt.cdi.api.MqttTopic;
-import fr.sewatech.mqtt.cdi.connector.MqttConnectionFactoryImpl;
+import fr.sewatech.mqtt.cdi.api.MqttOutBoundTopic;
 import fr.sewatech.mqtt.cdi.connector.MqttConnectionImpl;
 import org.fusesource.mqtt.client.QoS;
 
@@ -37,14 +38,17 @@ public class MqttObserverBean {
     private static final Logger logger = Logger.getLogger(MqttObserverBean.class.getName());
 
     @Inject
-    private MqttConnectionFactoryImpl connectionFactory;
+    private MqttConnectionFactory connectionFactory;
+
+    @Inject @MqttOutBoundTopic(url = "tcp://docker:2883", value = "swt/Answer")
+    private MqttConnectionFactory connectionFactoryBis;
 
     private AtomicInteger count = new AtomicInteger();
 
-    public void onQuestion(@Observes @MqttTopic("swt/Question") MqttMessage message) {
+    public void onQuestion(@Observes @MqttInboundTopic("swt/Question") MqttMessage message) {
         logger.fine("Received : " + count.incrementAndGet());
         System.out.println("Message received " + message.asText() + " in " + this.getClass().getName() + " on Topic " + message.getTopic());
-        answer("Answer " + message.asText());
+        answer("Answer " + message.asText(), connectionFactory);
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -53,25 +57,28 @@ public class MqttObserverBean {
         logger.fine("Done : " + count.decrementAndGet());
     }
 
-    public void onQuestionBis(@Observes @MqttTopic("swt/QuestionBis") MqttMessage message) {
+    public void onQuestionBis(@Observes @MqttInboundTopic("swt/QuestionBis") MqttMessage message) {
         System.out.println("Message received " + message.asText() + " in " + this.getClass().getName() + " on Topic " + message.getTopic());
     }
 
-    public void onQuestionOtherBroker(@Observes @MqttTopic(value = "swt/Question", url = "tcp://docker:2883") MqttMessage message) {
-        System.out.println("Message received " + message.asText() + " in " + this.getClass().getName() + " on Topic " + message.getTopic());
+    public void onQuestionOtherBroker(@Observes @MqttInboundTopic(value = "swt/Question", url = "tcp://docker:2883") MqttMessage message) {
+        System.out.println("Message received " + message.asText()
+                            + " in " + this.getClass().getName()
+                            + " on Topic " + message.getTopic());
+        answer("Yeah " + message.asText(), connectionFactoryBis);
     }
 
-    private void answer(String message) {
+    private void answer(String message, MqttConnectionFactory connectionFactory) {
         if (connectionFactory == null) {
             logger.warning(this.getClass().getName() + " is trying to answer but has no connection factory");
             return;
         }
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine(this.getClass().getName() + " will answer " + message);
+            logger.fine(connectionFactory + " will answer " + message);
         }
         try {
             MqttConnectionImpl connection = connectionFactory.getConnection();
-            connection.publish("swt/Default", message, QoS.AT_MOST_ONCE);
+            connection.publish(message);
             connection.close();
         } catch (Exception e) {
             logger.log(Level.SEVERE, "ARRRRGH : " + e.getMessage(), e);

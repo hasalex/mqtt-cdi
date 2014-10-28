@@ -1,6 +1,7 @@
 package fr.sewatech.mqtt.cdi.connector;
 
 import fr.sewatech.mqtt.cdi.api.MqttConnection;
+import fr.sewatech.mqtt.cdi.api.MqttOutBoundTopic;
 import org.fusesource.mqtt.client.BlockingConnection;
 import org.fusesource.mqtt.client.QoS;
 
@@ -12,11 +13,21 @@ public class MqttConnectionImpl implements MqttConnection {
     private static final Logger logger = Logger.getLogger(MqttConnectionImpl.class.getName());
 
     BlockingConnection blockingConnection;
-    private MqttConnectionFactoryImpl connectionFactory;
+    private MqttConnectionPools connectionProvider;
+    final MqttOutBoundTopic topic;
 
-    MqttConnectionImpl(BlockingConnection blockingConnection, MqttConnectionFactoryImpl mqttConnectionFactory) {
+    MqttConnectionImpl(BlockingConnection blockingConnection, MqttConnectionPools mqttConnectionFactory, MqttOutBoundTopic topic) {
         this.blockingConnection = blockingConnection;
-        connectionFactory = mqttConnectionFactory;
+        connectionProvider = mqttConnectionFactory;
+        this.topic = topic;
+    }
+
+    public void publish(String message) {
+        if (topic == null) {
+            publish("swt/Default", message, QoS.AT_MOST_ONCE);
+        } else {
+            publish(topic.value(), message, topic.qos());
+        }
     }
 
     public void publish(String topicName, String message, QoS qos) {
@@ -35,6 +46,6 @@ public class MqttConnectionImpl implements MqttConnection {
 
 
     public void close() {
-        connectionFactory.close(this);
+        connectionProvider.close(this);
     }
 }
