@@ -1,20 +1,25 @@
 package fr.sewatech.mqtt.cdi.connector;
 
-import fr.sewatech.mqtt.cdi.api.MqttMessage;
-import org.fusesource.mqtt.client.FutureConnection;
-import org.fusesource.mqtt.client.MQTT;
-import org.fusesource.mqtt.client.Message;
-import org.fusesource.mqtt.client.Topic;
-
-import javax.enterprise.inject.spi.BeanManager;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
+import javax.enterprise.inject.spi.BeanManager;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import org.fusesource.mqtt.client.FutureConnection;
+import org.fusesource.mqtt.client.MQTT;
+import org.fusesource.mqtt.client.Message;
+import org.fusesource.mqtt.client.Topic;
+
+import fr.sewatech.mqtt.cdi.api.MqttMessage;
 
 /**
 * @author Alexis Hassler
@@ -24,6 +29,7 @@ class MqttMessageReceiver implements Runnable {
     private static final Logger logger = Logger.getLogger(MqttMessageReceiver.class.getName());
 
     private Topic[] topics;
+    private Map<Pattern, String> wildcardTopics;
     private BeanManager beanManager;
     private FutureConnection connection;
     private String url;
@@ -32,6 +38,7 @@ class MqttMessageReceiver implements Runnable {
         this.topics = topics;
         this.beanManager = beanManager;
         this.url = url;
+        this.wildcardTopics = extractWildcardTopics(topics);
     }
 
     public void run() {
@@ -39,7 +46,6 @@ class MqttMessageReceiver implements Runnable {
             connection = connect(url);
             connection.subscribe(topics);
             logger.fine("... connected");
-
 
             ExecutorService executorService;
             try {
@@ -100,6 +106,12 @@ class MqttMessageReceiver implements Runnable {
 
         public void run() {
             beanManager.fireEvent(message, new TopicAnnotationLiteral(url, message.getTopic()));
+
+        	for (Pattern wildcardTopic : wildcardTopics.keySet()) {
+				if (wildcardTopic.matcher(message.getTopic()).matches()) {
+					beanManager.fireEvent(message, new TopicAnnotationLiteral(url, wildcardTopics.get(wildcardTopic)));
+				}
+			}
         }
     }
 
@@ -112,5 +124,23 @@ class MqttMessageReceiver implements Runnable {
         connection.connect().await();
         return connection;
     }
+    
+    private Map<Pattern, String> extractWildcardTopics(Topic[] topics) {
+		Map<Pattern, String> wildcardTopics = new HashMap<>();
+        String partPattern = "[a-zA-Z0-9\\_\\-\\%\\~\\:\\(\\)]+";
+        
+        for (Topic topic : topics) {
+        	String topicName = topic.name().toString();
+			if (topicName.contains("#") || topicName.contains("+")) {
+				String patternString = "^"+topicName.replace("/", "\\/")+"$";
+				patternString = patternString.replace("+", partPattern);
+				patternString = patternString.replace("#", "("+partPattern+"\\/*)*");
+				Pattern pattern = Pattern.compile(patternString);
+				wildcardTopics.put(pattern, topicName);
+			}
+		}
+        
+		return wildcardTopics;
+	}
 
 }
