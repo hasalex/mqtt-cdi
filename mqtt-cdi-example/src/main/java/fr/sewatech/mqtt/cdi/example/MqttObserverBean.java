@@ -58,7 +58,9 @@ public class MqttObserverBean {
     }
 
     public void onQuestionBis(@Observes @MqttInboundTopic("swt/QuestionBis") MqttMessage message) {
-        System.out.println("Message received " + message.asText() + " in " + this.getClass().getName() + " on Topic " + message.getTopic());
+        System.out.println("Message received " + message.asText()
+                            + " in " + this.getClass().getName()
+                            + " on Topic " + message.getTopic());
     }
 
     public void onQuestionOtherBroker(@Observes @MqttInboundTopic(value = "swt/Question", url = "tcp://docker:2883") MqttMessage message) {
@@ -66,6 +68,13 @@ public class MqttObserverBean {
                             + " in " + this.getClass().getName()
                             + " on Topic " + message.getTopic());
         answer("Yeah " + message.asText(), connectionFactoryBis);
+    }
+
+    public void onWildcard(@Observes @MqttInboundTopic(value = "swt/#") MqttMessage message) {
+        System.out.println("Message received " + message.asText()
+                + " in " + this.getClass().getName()
+                + " on Topic " + message.getTopic()
+                + " via a wildcard subscription");
     }
 
     private void answer(String message, MqttConnectionFactory connectionFactory) {
